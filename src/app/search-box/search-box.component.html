@@ -1,3 +1,19 @@
-<p>
-  search-box works!
-</p>
+<form (submit)="search()">
+    <input name="topic" [(ngModel)]="topic" placeholder="Topic">
+    <input type="submit" value="Search" />
+</form>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Author</th>
+        <th>Description</th>
+        <th>Topics</th>
+    </tr>
+    <tr *ngFor="let repo of repositories">
+        <td><a [href]="repo.url">{{repo.name}}</a></td>
+        <td>{{repo.author}}</td>
+        <td>{{repo.description}}</td>
+        <td>{{repo.topics.join(', ')}}</td>
+    </tr>
+</table>
