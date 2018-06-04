@@ -9,14 +9,12 @@ import { Repository, RepositoryService } from '../repository.service';
 export class SearchBoxComponent implements OnInit {
   public topic = '';
   public repositories: Repository[] = [];
-
   constructor(private repoService: RepositoryService) {}
 
   ngOnInit() {}
 
   search(): void {
-    const topic = this.topic.value;
-    this.repoService.searchRepositories(topic).subscribe(repos => {
+    this.repoService.searchRepositories(this.topic).subscribe(repos => {
       this.repositories = repos;
     });
   }
