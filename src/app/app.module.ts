@@ -1,18 +1,17 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
-
 import { AppComponent } from './app.component';
-
+import { SearchBoxComponent } from './search-box/search-box.component';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule, MatInputModule } from '@angular/material';
+import { RepositoryService } from './repository.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+  declarations: [AppComponent, SearchBoxComponent],
+  imports: [BrowserModule, MatInputModule, MatFormFieldModule, FormsModule, HttpClientModule],
+  providers: [RepositoryService],
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
