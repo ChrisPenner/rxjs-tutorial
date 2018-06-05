@@ -9,6 +9,7 @@ export interface Repository {
   url: string;
   description: string;
   topics: string[];
+  language: string;
 }
 
 const githubApiUrl = `https://api.github.com`;
@@ -34,6 +35,7 @@ export class RepositoryService {
             url: repo.html_url,
             description: repo.description,
             topics: repo.topics,
+            language: repo.language,
           })),
         ),
       );
