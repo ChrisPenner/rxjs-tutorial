@@ -3,6 +3,8 @@
     <input type="submit" value="Search" />
 </form>
 
+<span *ngFor="let lang of languageCounts">{{lang.language}}: {{lang.count}}, </span>
+
 <table>
     <tr>
         <th>Name</th>
