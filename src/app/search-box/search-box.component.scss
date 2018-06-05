@@ -2,3 +2,8 @@
   margin: auto;
   display: block;
 }
+
+form {
+  display: flex;
+  flex-flow: column nowrap;
+}
