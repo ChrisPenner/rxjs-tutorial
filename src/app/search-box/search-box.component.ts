@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Repository, RepositoryService } from '../repository.service';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { map, switchMap } from 'rxjs/operators';
+import { combineLatest, map, switchMap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
@@ -18,30 +18,35 @@ interface LanguageCount {
 export class SearchBoxComponent implements OnInit {
   public topic = '';
   public languageFilter = '';
-  public readonly languageCounts$: Observable<LanguageCount[]>;
 
-  private repos$$ = new BehaviorSubject<Repository[]>([]);
-  private filteredRepos$$ = new BehaviorSubject<Repository[]>([]);
+  public readonly languageCounts$: Observable<LanguageCount[]>;
+  public readonly filteredRepos$: Observable<Repository[]>;
+
   private topic$$ = new ReplaySubject<string>();
+  private languageFilter$$ = new BehaviorSubject<string | null>(null);
 
   constructor(private repoService: RepositoryService) {
-    this.topic$$
-      .pipe(switchMap(topic => this.repoService.searchRepositories(topic)))
-      .subscribe(repos => this.repos$$.next(repos));
+    this.filteredRepos$ = this.topic$$.pipe(
+      switchMap(topic => this.repoService.searchRepositories(topic)),
+      combineLatest(this.languageFilter$$),
+      map(([repos, languageFilter]) =>
+        this.filterByLanguage(repos, languageFilter),
+      ),
+    );
 
-    this.languageCounts$ = this.repos$$.pipe(
+    this.languageCounts$ = this.filteredRepos$.pipe(
       map((repos: Repository[]) => this.buildLanguageBreakdown(repos)),
     );
   }
 
   ngOnInit() {}
 
-  get filteredRepos$(): Observable<Repository[]> {
-    return this.filteredRepos$$.asObservable();
+  public search(): void {
+    this.topic$$.next(this.topic);
   }
 
-  search(): void {
-    this.topic$$.next(this.topic);
+  public changeLanguageFilter(language: string | null): void {
+    this.languageFilter$$.next(language);
   }
 
   private buildLanguageBreakdown(repos: Repository[]): LanguageCount[] {
@@ -59,14 +64,13 @@ export class SearchBoxComponent implements OnInit {
     }));
   }
 
-  public filterByLanguage(language: string | null): void {
+  private filterByLanguage(
+    repos: Repository[],
+    language: string | null,
+  ): Repository[] {
     if (!language) {
-      this.filteredRepos$$.next(this.repos$$.getValue());
-      return;
+      return repos;
     }
-    const filteredRepos = this.repos$$
-      .getValue()
-      .filter(repo => repo.language === language);
-    this.filteredRepos$$.next(filteredRepos);
+    return repos.filter(repo => repo.language === language);
   }
 }
