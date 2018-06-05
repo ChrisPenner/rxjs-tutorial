@@ -4,13 +4,16 @@
         <input type="submit" value="Search" />
     </div>
     <label> Filter by Language
-    <select [(ngModel)]="languageFilter" [ngModelOptions]="{standalone: true}" (change)="filterByLanguage($event.target.value)">
+    <select [(ngModel)]="languageFilter" [ngModelOptions]="{standalone: true}" (change)="changeLanguageFilter($event.target.value)">
         <option [selected]="true" value="">All</option>
         <option>Python</option>
+        <option>Java</option>
         <option>Typescript</option>
         <option>Ruby</option>
         <option>Haskell</option>
         <option>C</option>
+        <option>Javascript</option>
+        <option>Go</option>
       </select>
     </label>
 </form>
