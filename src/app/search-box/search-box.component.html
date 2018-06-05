@@ -1,7 +1,21 @@
 <form (submit)="search()">
-    <input name="topic" placeholder="Topic" [(ngModel)]="topic">
-    <input type="submit" value="Search" />
+    <div>
+        <input name="topic" placeholder="Topic" [(ngModel)]="topic" [ngModelOptions]="{standalone: true}">
+        <input type="submit" value="Search" />
+    </div>
+    <label> Filter by Language
+    <select [(ngModel)]="languageFilter" [ngModelOptions]="{standalone: true}" (change)="filterByLanguage($event.target.value)">
+        <option [selected]="true" value="">All</option>
+        <option>Python</option>
+        <option>Typescript</option>
+        <option>Ruby</option>
+        <option>Haskell</option>
+        <option>C</option>
+      </select>
+    </label>
 </form>
+
+
 
 <span *ngFor="let lang of languageCounts$ | async">{{lang.language}}: {{lang.count}}, </span>
 
@@ -12,7 +26,7 @@
         <th>Description</th>
         <th>Topics</th>
     </tr>
-    <tr *ngFor="let repo of repos$ | async">
+    <tr *ngFor="let repo of filteredRepos$ | async">
         <td><a [href]="repo.url">{{repo.name}}</a></td>
         <td>{{repo.author}}</td>
         <td>{{repo.description}}</td>
