@@ -1,9 +1,9 @@
 <form (submit)="search()">
-    <input name="topic" [(ngModel)]="topic" placeholder="Topic">
+    <input name="topic" placeholder="Topic" [(ngModel)]="topic">
     <input type="submit" value="Search" />
 </form>
 
-<span *ngFor="let lang of languageCounts">{{lang.language}}: {{lang.count}}, </span>
+<span *ngFor="let lang of languageCounts$ | async">{{lang.language}}: {{lang.count}}, </span>
 
 <table>
     <tr>
@@ -12,7 +12,7 @@
         <th>Description</th>
         <th>Topics</th>
     </tr>
-    <tr *ngFor="let repo of repositories">
+    <tr *ngFor="let repo of repos$ | async">
         <td><a [href]="repo.url">{{repo.name}}</a></td>
         <td>{{repo.author}}</td>
         <td>{{repo.description}}</td>

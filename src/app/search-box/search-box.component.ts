@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Repository, RepositoryService } from '../repository.service';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { map, switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
 
 interface LanguageCount {
   language: string;
@@ -13,31 +16,41 @@ interface LanguageCount {
 })
 export class SearchBoxComponent implements OnInit {
   public topic = '';
-  public repositories: Repository[] = [];
-  public languageCounts: LanguageCount[] = [];
+  public readonly repos$: Observable<Repository[]>;
+  public readonly languageCounts$: Observable<LanguageCount[]>;
 
-  constructor(private repoService: RepositoryService) {}
+  private topic$$ = new ReplaySubject<string>();
+
+  constructor(private repoService: RepositoryService) {
+    // We use long-lived observables which we define declaratively
+    this.repos$ = this.topic$$.pipe(
+      switchMap(topic => this.repoService.searchRepositories(topic)),
+    );
+
+    // We can 'chain' off of our data if we use observables rather than instance properties
+    this.languageCounts$ = this.repos$.pipe(
+      map((repos: Repository[]) => this.buildLanguageBreakdown(repos)),
+    );
+  }
 
   ngOnInit() {}
 
   search(): void {
-    this.repoService.searchRepositories(this.topic).subscribe(repos => {
-      // Set the repos as an instance property so it's accessible in the template
-      this.repositories = repos;
-      // Rebuild our language breakdown
-      this.buildLanguageBreakdown();
-    });
+    this.topic$$.next(this.topic);
   }
 
-  buildLanguageBreakdown() {
+  private buildLanguageBreakdown(repos: Repository[]): LanguageCount[] {
     // Go through all languages and build up a list of language counts
-    const breakdown = this.repositories.reduce<object>((langs: object, { language }) => {
+    const breakdown = repos.reduce<object>((langs: object, { language }) => {
       return {
         ...langs,
         [language]: (langs[language] || 0) + 1,
       };
     }, {});
     // Convert language counts into a list of LanguageCount objects
-    this.languageCounts = Object.entries(breakdown).map(([language, count]) => ({ language, count }));
+    return Object.entries(breakdown).map(([language, count]) => ({
+      language,
+      count,
+    }));
   }
 }
