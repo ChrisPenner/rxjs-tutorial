@@ -4,6 +4,7 @@ import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { combineLatest, map, switchMap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { APIStream, XStream } from '../xstream';
 
 interface LanguageCount {
   language: string;
@@ -20,21 +21,29 @@ export class SearchBoxComponent implements OnInit {
   public languageFilter = '';
 
   public readonly languageCounts$: Observable<LanguageCount[]>;
-  public readonly filteredRepos$: Observable<Repository[]>;
+  public readonly filteredReposX: XStream<Repository[]>;
 
   private topic$$ = new ReplaySubject<string>();
   private languageFilter$$ = new BehaviorSubject<string | null>(null);
 
   constructor(private repoService: RepositoryService) {
-    this.filteredRepos$ = this.topic$$.pipe(
-      switchMap(topic => this.repoService.searchRepositories(topic)),
-      combineLatest(this.languageFilter$$),
-      map(([repos, languageFilter]) =>
-        this.filterByLanguage(repos, languageFilter),
+    this.filteredReposX = APIStream.of(wrapAPICall =>
+      this.topic$$.pipe(
+        switchMap(topic =>
+          this.repoService.searchRepositories(topic).pipe(wrapAPICall),
+        ),
+        combineLatest(this.languageFilter$$),
+        map(([repos, languageFilter]) =>
+          this.filterByLanguage(repos, languageFilter),
+        ),
       ),
     );
 
-    this.languageCounts$ = this.filteredRepos$.pipe(
+    this.filteredReposX.errors$.subscribe(err =>
+      window.alert(JSON.stringify(err)),
+    );
+
+    this.languageCounts$ = this.filteredReposX.results$.pipe(
       map((repos: Repository[]) => this.buildLanguageBreakdown(repos)),
     );
   }

@@ -17,22 +17,25 @@
       </select>
     </label>
 </form>
+<ng-container *ngIf="!(filteredReposX.loading$ | async); else loading">
+    <span *ngFor="let lang of languageCounts$ | async">{{lang.language}}: {{lang.count}}, </span>
 
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Author</th>
+            <th>Description</th>
+            <th>Topics</th>
+        </tr>
+        <tr *ngFor="let repo of filteredReposX.results$ | async">
+            <td><a [href]="repo.url">{{repo.name}}</a></td>
+            <td>{{repo.author}}</td>
+            <td>{{repo.description}}</td>
+            <td>{{repo.topics.join(', ')}}</td>
+        </tr>
+    </table>
+</ng-container>
 
-
-<span *ngFor="let lang of languageCounts$ | async">{{lang.language}}: {{lang.count}}, </span>
-
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Author</th>
-        <th>Description</th>
-        <th>Topics</th>
-    </tr>
-    <tr *ngFor="let repo of filteredRepos$ | async">
-        <td><a [href]="repo.url">{{repo.name}}</a></td>
-        <td>{{repo.author}}</td>
-        <td>{{repo.description}}</td>
-        <td>{{repo.topics.join(', ')}}</td>
-    </tr>
-</table>
+<ng-template #loading>
+    Loading...
+</ng-template>
